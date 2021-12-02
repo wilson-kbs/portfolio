@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {}
+  },
+  "types": ["node", "mocha", "chai", "sinon", "cypress"]
+}

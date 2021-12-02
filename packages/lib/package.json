@@ -1,0 +1,39 @@
+{
+  "name": "@portfolio/lib",
+  "version": "0.0.0",
+  "private": true,
+  "description": "library",
+  "author": "Wilson-kbs <kabalisa.wilson@gmail.com>",
+  "homepage": "https://github.com/wilson-kbs/portfolio#readme",
+  "license": "ISC",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "lib": "src",
+    "test": "__tests__"
+  },
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wilson-kbs/portfolio.git"
+  },
+  "scripts": {
+    "afterinstall": "npm run build",
+    "build": "npx tsc -p tsconfig.build.json",
+    "build:watch": "npx tsc -p tsconfig.build.json -w --preserveWatchOutput",
+    "start:dev": "npm run build:watch",
+    "test": "",
+    "test:watch": ""
+  },
+  "bugs": {
+    "url": "https://github.com/wilson-kbs/portfolio/issues"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.2"
+  }
+}
