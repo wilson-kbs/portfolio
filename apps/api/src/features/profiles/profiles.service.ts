@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ObjectID } from 'mongodb';
 import { MongoRepository } from 'typeorm';
 import { Profile } from '../../entities/profile.entity';
 

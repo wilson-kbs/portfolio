@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CredentialsDto } from './models/credentials.dto';
-import { AccountDto } from './models/accountDto';
 
 @Controller()
 export class AuthController {
