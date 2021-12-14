@@ -6,9 +6,11 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Account } from '../../entities/account.entity';
 import { MongoRepository } from 'typeorm';
+import { ObjectID } from 'mongodb';
+import { Account } from '../../entities/account.entity';
 import { CredentialsDto } from './models/credentials.dto';
 import * as bcrypt from 'bcrypt';
 
@@ -34,7 +36,14 @@ export class AuthService {
     private accountsRepository: MongoRepository<Account>,
     @Inject(Logger)
     private readonly logger: Logger,
+    private jwtService: JwtService,
   ) {}
+
+  public getAccountById(id: string) {
+    return this.accountsRepository.findOne(new ObjectID(id), {
+      select: ['username'],
+    });
+  }
 
   public async createAccount({ username, password }: CredentialsDto) {
     const account = new Account(
@@ -48,18 +57,18 @@ export class AuthService {
         throw new ConflictException('Login already exists');
       }
       this.logger.error(err);
-      console.log('test');
       throw new InternalServerErrorException();
     }
   }
 
   public async login({ username, password }: CredentialsDto) {
     const account = await this.accountsRepository.findOne({ username });
-    if (!account || AuthService.compareHash(password, account.passwordHash)) {
+    if (!account || !AuthService.compareHash(password, account.passwordHash)) {
       throw new UnauthorizedException();
     }
+    const payload = { sub: account.id, username: account.username };
     return {
-      token: 'token',
+      access_token: await this.jwtService.signAsync(payload),
     };
   }
 

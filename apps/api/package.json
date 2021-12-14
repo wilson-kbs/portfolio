@@ -37,6 +37,7 @@
     "joi": "^17.5.0",
     "@nestjs/config": "^1.1.5",
     "@nestjs/passport": "^8.0.1",
+    "@nestjs/jwt": "^8.0.0",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "bcrypt": "^5.0.1",
