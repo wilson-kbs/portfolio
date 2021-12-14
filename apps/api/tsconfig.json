@@ -20,5 +20,5 @@
     "noFallthroughCasesInSwitch": false,
     "allowJs": true,
   },
-
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"],
 }
