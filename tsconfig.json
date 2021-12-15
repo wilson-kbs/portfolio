@@ -5,5 +5,5 @@
     "baseUrl": ".",
     "paths": {}
   },
-  "types": ["node", "mocha", "chai", "sinon", "cypress"]
+  "types": ["node", "jest", "chai", "sinon", "cypress"]
 }

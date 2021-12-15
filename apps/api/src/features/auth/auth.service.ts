@@ -7,12 +7,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
-import { MongoRepository } from 'typeorm';
-import { ObjectID } from 'mongodb';
-import { Account } from '../../entities/account.entity';
 import { CredentialsDto } from './models/credentials.dto';
 import * as bcrypt from 'bcrypt';
+import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument } from '../users/schemas/user.schema';
+import { Model } from 'mongoose';
 
 const PASSWORD_SALT = 10;
 
@@ -32,26 +31,26 @@ const isUniqueViolationError = (err: unknown) => {
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(Account)
-    private accountsRepository: MongoRepository<Account>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
     @Inject(Logger)
     private readonly logger: Logger,
     private jwtService: JwtService,
   ) {}
 
-  public getAccountById(id: string) {
-    return this.accountsRepository.findOne(new ObjectID(id), {
-      select: ['username'],
-    });
+  public async getAccountById(id: string) {
+    return await this.userModel
+      .findOne({ _id: id })
+      .select('-passwordHash')
+      .exec();
   }
 
   public async createAccount({ username, password }: CredentialsDto) {
-    const account = new Account(
+    const createUser = new this.userModel({
       username,
-      bcrypt.hashSync(password, PASSWORD_SALT),
-    );
+      passwordHash: bcrypt.hashSync(password, PASSWORD_SALT),
+    });
     try {
-      return await this.accountsRepository.save(account);
+      return await createUser.save();
     } catch (err) {
       if (isUniqueViolationError(err)) {
         throw new ConflictException('Login already exists');
@@ -62,7 +61,7 @@ export class AuthService {
   }
 
   public async login({ username, password }: CredentialsDto) {
-    const account = await this.accountsRepository.findOne({ username });
+    const account = await this.userModel.findOne({ username }).exec();
     if (!account || !AuthService.compareHash(password, account.passwordHash)) {
       throw new UnauthorizedException();
     }

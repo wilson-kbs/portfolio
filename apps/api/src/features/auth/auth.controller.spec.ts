@@ -1,24 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthController } from './auth.controller';
 import * as request from 'supertest';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import {
-  closeInMongodbConnection,
-  rootTypeOrmTestModule,
-} from '../../test-utils/typeorm/TypeOrmDatabaseTest';
-import { Account } from '../../entities/account.entity';
 import { AuthModule } from './auth.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import * as mongoose from 'mongoose';
 
 describe('AuthController (e2e)', () => {
-  let controller: AuthController;
   let app: INestApplication;
+  let mongod: MongoMemoryServer;
 
   beforeEach(async () => {
+    process.env.KBSV_PORTFOLIO_JWT_SECRET =
+      'fybqkjgrhsjbdgjkltbskjbtguisnbknbt566d46h4d64g64684vd654';
+    mongod = await MongoMemoryServer.create({
+      instance: {
+        dbName: 'portfolio',
+      },
+    });
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         AuthModule,
-        rootTypeOrmTestModule({
-          entities: [Account],
+        MongooseModule.forRootAsync({
+          useFactory: async () => ({
+            uri: mongod.getUri(),
+          }),
         }),
       ],
     }).compile();
@@ -28,38 +34,37 @@ describe('AuthController (e2e)', () => {
     await app.init();
   });
 
-  afterAll(async () => {
-    await closeInMongodbConnection();
+  afterEach(async () => {
+    await app.close();
+    await mongoose.disconnect();
+    await mongod.stop();
   });
 
-  // it('should be defined', () => {
-  //   expect(controller).toBeDefined();
-  // });
+  it('should be defined', () => {
+    expect(app).toBeDefined();
+  });
 
-  describe('/auth/signup (POST)', () => {
+  describe('/signup (POST)', () => {
     it(`When invalid dto`, () => {
-      return request(app.getHttpServer())
-        .post('/auth/signup')
-        .send({})
-        .expect(400);
+      return request(app.getHttpServer()).post('/signup').send({}).expect(400);
     });
-    it('When valid dto', () => {
+    it('When valid models', () => {
       const account = {
         username: 'test1',
         password: '123456789',
       };
       return request(app.getHttpServer())
-        .post('/auth/signup')
+        .post('/signup')
         .set('Content-type', 'application/json')
         .send(JSON.stringify(account))
         .expect(201);
     });
   });
 
-  describe('/auth/login', () => {
+  describe('/login', () => {
     it('When account does not exists', () => {
       return request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/login')
         .send({
           username: 'admin',
           password: 'admin',

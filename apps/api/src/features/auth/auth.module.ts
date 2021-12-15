@@ -1,18 +1,18 @@
 import { Logger, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Account } from '../../entities/account.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModuleOptions } from '@nestjs/jwt/dist/interfaces/jwt-module-options.interface';
 import * as fs from 'fs';
 import { JwtStrategy } from './jwt.strategy';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from '../users/schemas/user.schema';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Account]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

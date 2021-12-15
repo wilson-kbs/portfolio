@@ -1,13 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ProfilesModule } from './features/profiles/profiles.module';
-import { Profile } from './entities/profile.entity';
 import * as Joi from 'joi';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './features/auth/auth.module';
-import { Account } from './entities/account.entity';
+import { UsersModule } from './features/users/users.module';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -26,10 +23,10 @@ import { Account } from './entities/account.entity';
         KBSV_PORTFOLIO_DATABASE_PASSWORD: Joi.string(),
       }),
     }),
-    TypeOrmModule.forRootAsync({
+    MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
-        let url = configService.get('KBSV_PORTFOLIO_DATABASE_SCHEME');
+        let uri = configService.get('KBSV_PORTFOLIO_DATABASE_SCHEME');
         const dbUsername = configService.get(
           'KBSV_PORTFOLIO_DATABASE_USERNAME',
         );
@@ -40,26 +37,21 @@ import { Account } from './entities/account.entity';
         const dbPort = configService.get('KBSV_PORTFOLIO_DATABASE_PORT');
         const dbname = configService.get('KBSV_PORTFOLIO_DATABASE_DBNAME');
         if (!!dbUsername && !!dbPassword) {
-          url += `${dbUsername}:${dbPassword}@`;
+          uri += `${dbUsername}:${dbPassword}@`;
         }
-        url += `${dbHost}:${dbPort}/${dbname}`;
+        uri += `${dbHost}:${dbPort}/${dbname}`;
 
         return {
-          type: 'mongodb',
-          url,
-          entities: [Account, Profile],
+          uri: uri,
           useUnifiedTopology: true,
           useNewUrlParser: true,
-          synchronize: true,
         };
       },
       inject: [ConfigService],
     }),
     ProfilesModule,
     AuthModule,
+    UsersModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
-// eslint-disable-next-line prettier/prettier
-export class AppModule { }
+export class AppModule {}
