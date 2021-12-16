@@ -4,7 +4,7 @@ import { Exclude } from 'class-transformer';
 import { User } from '../../users/schemas/user.schema';
 import * as mongoose from 'mongoose';
 import { Skill, SkillSchema } from '../skills/schemas/skill.schema';
-import { Project } from '../projects/schemas/project.schema';
+import { Project, ProjectSchema } from '../projects/schemas/project.schema';
 
 export type ProfileDocument = Profile & Document;
 
@@ -31,7 +31,7 @@ export class Profile {
   @Prop([SkillSchema])
   skills: Skill[];
 
-  @Prop([Project])
+  @Prop([ProjectSchema])
   projects: Project[];
 
   constructor(partial: Partial<Profile>) {

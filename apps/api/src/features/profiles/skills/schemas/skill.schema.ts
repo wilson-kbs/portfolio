@@ -1,9 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
-import { CreateSkillDto } from '../models/create-skill.dto';
-import { ObjectID } from 'bson';
+import { Types } from 'mongoose';
 
-export type SkillDocument = Skill & Document;
+import { ObjectID } from 'bson';
 
 @Schema()
 export class Skill {
@@ -22,10 +20,8 @@ export class Skill {
   @Prop()
   lvl: number;
 
-  constructor(createSkillDto: CreateSkillDto) {
-    for (const props in createSkillDto) {
-      this[props] = createSkillDto[props];
-    }
+  constructor(partial: Partial<Skill>) {
+    Object.assign(this, partial);
   }
 }
 export const SkillSchema = SchemaFactory.createForClass(Skill);

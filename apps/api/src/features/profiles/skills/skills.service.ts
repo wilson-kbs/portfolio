@@ -28,9 +28,9 @@ export class SkillsService {
 
     profile.skills.push(new Skill(createSkillDto));
 
-    const newProfile = await profile.save();
+    const updatedProfile = await profile.save();
 
-    return newProfile.toJSON().skills.pop();
+    return updatedProfile.toJSON().skills.pop();
   }
 
   async findAll(profileId: string) {
@@ -53,9 +53,9 @@ export class SkillsService {
       profile.skills[skillIndex][props] = updateSkillDto[props];
     }
 
-    const newProfile = await profile.save();
+    const updatedProfile = await profile.save();
 
-    return newProfile.toJSON().skills.find((item) => item._id == skillId);
+    return updatedProfile.toJSON().skills.find((item) => item._id == skillId);
   }
 
   async delete(profileId: string, skillId: string) {
