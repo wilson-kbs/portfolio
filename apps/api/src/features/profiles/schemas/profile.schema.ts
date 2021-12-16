@@ -3,13 +3,14 @@ import { Document } from 'mongoose';
 import { Exclude } from 'class-transformer';
 import { User } from '../../users/schemas/user.schema';
 import * as mongoose from 'mongoose';
+import { Skill, SkillSchema } from '../skills/schemas/skill.schema';
+import { Project } from '../projects/schemas/project.schema';
 
 export type ProfileDocument = Profile & Document;
 
 @Schema()
 export class Profile {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  @Exclude()
   user: User;
 
   @Prop()
@@ -22,11 +23,20 @@ export class Profile {
   lastname: string;
 
   @Prop()
-  @Exclude()
   fullnamequery: string;
 
   @Prop()
   bio: string;
+
+  @Prop([SkillSchema])
+  skills: Skill[];
+
+  @Prop([Project])
+  projects: Project[];
+
+  constructor(partial: Partial<Profile>) {
+    Object.assign(this, partial);
+  }
 }
 
 export const ProfileSchema = SchemaFactory.createForClass(Profile);

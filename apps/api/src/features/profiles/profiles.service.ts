@@ -10,6 +10,8 @@ export class ProfilesService {
   constructor(
     @InjectModel(Profile.name) private profileModel: Model<ProfileDocument>,
   ) {}
+
+
   async create(userid: string, createProfileDto: CreateProfileDto) {
     const profiledb = await this.profileModel.findOne({
       user: userid,
@@ -34,6 +36,8 @@ export class ProfilesService {
           .toLocaleLowerCase()
           .split(' ')
           .join('-')}`,
+      skills: [],
+      projects: [],
     });
 
     await createProfile.save();
@@ -43,13 +47,15 @@ export class ProfilesService {
     return `This action returns all profiles`;
   }
 
-  findOne(fullName: string) {
-    return this.profileModel.findOne({
-      fullnamequery: {
-        $regex: fullName,
-        $options: 'i',
-      },
-    });
+  async findByName(fullName: string) {
+    return await this.profileModel
+      .findOne({
+        fullnamequery: {
+          $regex: fullName,
+          $options: 'i',
+        },
+      })
+      .exec();
   }
 
   update(id: string, updateProfileDto: UpdateProfileDto) {
@@ -62,5 +68,13 @@ export class ProfilesService {
         user: userid,
       })
       .exec();
+  }
+
+  async userIsAllowToWriteProfile(profileId: string, userId: string) {
+    const profile = await this.profileModel
+      .findById(profileId)
+      .populate('user')
+      .exec();
+    return profile.user._id == userId;
   }
 }

@@ -9,6 +9,8 @@ import * as fs from 'fs';
 import { JwtStrategy } from './jwt.strategy';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../users/schemas/user.schema';
+import { APP_GUARD, Reflector } from '@nestjs/core';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Module({
   imports: [
@@ -61,7 +63,16 @@ import { User, UserSchema } from '../users/schemas/user.schema';
     }),
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
-  providers: [AuthService, JwtStrategy, Logger],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    Logger,
+    {
+      provide: APP_GUARD,
+      useFactory: (ref) => new JwtAuthGuard(ref),
+      inject: [Reflector],
+    },
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}

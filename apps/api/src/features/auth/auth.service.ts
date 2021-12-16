@@ -37,9 +37,9 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  public async getAccountById(id: string) {
+  public async getAccountById(accountId: string) {
     return await this.userModel
-      .findOne({ _id: id })
+      .findById(accountId)
       .select('-passwordHash')
       .exec();
   }

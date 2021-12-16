@@ -12,12 +12,17 @@ import {
   UseInterceptors,
   HttpCode,
   UnauthorizedException,
+  Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { ProfilesService } from './profiles.service';
 import { CreateProfileDto } from './models/create-profile.dto';
 import { UpdateProfileDto } from './models/update-profile.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JwtIsAdminAuthGuard } from '../auth/jwt-is-admin-auth.guard';
+import { AllowAny } from '../../decorator/allow-any.decorator';
+import { ProfileDto } from './models/profile.dto';
+import {Profile} from "./schemas/profile.schema";
 
 @Controller('profiles')
 export class ProfilesController {
@@ -31,16 +36,20 @@ export class ProfilesController {
   }
 
   @Get()
-  @UseGuards(JwtIsAdminAuthGuard)
-  findAll() {
-    return this.profilesService.findAll();
+  @AllowAny()
+  @UseInterceptors(ClassSerializerInterceptor)
+  async findAll(@Query() query) {
+    if (!query.name) throw new BadRequestException();
+    const profile = await this.profilesService.findByName(query.name);
+    return new ProfileDto(profile.toJSON());
   }
 
-  @Get(':fullname')
-  @UseInterceptors(ClassSerializerInterceptor)
-  findOne(@Param('fullname') fullname: string) {
-    return this.profilesService.findOne(fullname);
-  }
+  // @Get(':fullname')
+  // @UseInterceptors(ClassSerializerInterceptor)
+  // @AllowAny()
+  // findOne(@Param('fullname') fullname: string) {
+  //   return this.profilesService.findOne(fullname);
+  // }
 
   @Patch()
   @UseGuards(JwtAuthGuard)
