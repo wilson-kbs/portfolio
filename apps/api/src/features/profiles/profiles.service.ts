@@ -8,6 +8,7 @@ import { UpdateProfileDto } from './models/update-profile.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Profile, ProfileDocument } from './schemas/profile.schema';
 import { Model } from 'mongoose';
+import { UserDocument } from '../users/schemas/user.schema';
 
 @Injectable()
 export class ProfilesService {
@@ -99,6 +100,6 @@ export class ProfilesService {
       .findById(profileId)
       .populate('user')
       .exec();
-    return profile.user._id == userId;
+    return (profile.user as UserDocument)._id == userId;
   }
 }
