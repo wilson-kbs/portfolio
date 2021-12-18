@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { CreateProfileDto } from './models/create-profile.dto';
 import { UpdateProfileDto } from './models/update-profile.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -11,6 +15,14 @@ export class ProfilesService {
     @InjectModel(Profile.name) private profileModel: Model<ProfileDocument>,
   ) {}
 
+  public async getProfileById(id: string) {
+    const profile = await this.profileModel
+      .findById(id)
+      .select('-skills -projects')
+      .exec();
+    if (!profile) throw new BadRequestException();
+    return profile;
+  }
 
   async create(userid: string, createProfileDto: CreateProfileDto) {
     const profiledb = await this.profileModel.findOne({
@@ -47,27 +59,39 @@ export class ProfilesService {
     return `This action returns all profiles`;
   }
 
-  async findByName(fullName: string) {
-    return await this.profileModel
+  async findByFullName(fullName: string) {
+    const profile = await this.profileModel
       .findOne({
-        fullnamequery: {
-          $regex: fullName,
-          $options: 'i',
-        },
+        fullnamequery: fullName,
       })
       .exec();
+    if (!profile) throw new BadRequestException();
+    return profile;
   }
 
-  update(id: string, updateProfileDto: UpdateProfileDto) {
-    return `This action updates a #${id} profile`;
+  async findById(id: string) {
+    return await this.getProfileById(id);
   }
 
-  async remove(userid: string): Promise<any> {
-    return await this.profileModel
+  async update(id: string, updateProfileDto: UpdateProfileDto) {
+    const profile = await this.getProfileById(id);
+
+    for (const prop in updateProfileDto) {
+      profile[prop] = updateProfileDto[prop];
+    }
+
+    const updatedProfile = await profile.save();
+    return updatedProfile;
+  }
+
+  async remove(id: string): Promise<any> {
+    const profile = this.getProfileById(id);
+    await this.profileModel
       .deleteOne({
-        user: userid,
+        _id: id,
       })
       .exec();
+    return profile;
   }
 
   async userIsAllowToWriteProfile(profileId: string, userId: string) {

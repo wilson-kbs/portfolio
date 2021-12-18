@@ -1,5 +1,7 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { Profile } from '../schemas/profile.schema';
+import { Skill } from '../skills/schemas/skill.schema';
+import { Project } from '../projects/schemas/project.schema';
 
 export class ProfileDto {
   @Expose({ name: 'id' })
@@ -10,18 +12,18 @@ export class ProfileDto {
 
   lastname: string;
 
-  @Expose({ name: 'image' })
   img: string;
 
   bio: string;
 
   @Exclude()
   fullnamequery: string;
-  @Exclude()
-  skills: Array<any>;
 
   @Exclude()
-  projects: Array<any>;
+  skills: Array<Skill>;
+
+  @Exclude()
+  projects: Array<Project>;
 
   @Exclude()
   user: object;

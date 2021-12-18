@@ -18,11 +18,9 @@ import {
 import { ProfilesService } from './profiles.service';
 import { CreateProfileDto } from './models/create-profile.dto';
 import { UpdateProfileDto } from './models/update-profile.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { JwtIsAdminAuthGuard } from '../auth/jwt-is-admin-auth.guard';
 import { AllowAny } from '../../decorator/allow-any.decorator';
 import { ProfileDto } from './models/profile.dto';
-import {Profile} from "./schemas/profile.schema";
+import { CurrentUser } from '../../decorator/current-user.decorator';
 
 @Controller('profiles')
 export class ProfilesController {
@@ -30,7 +28,6 @@ export class ProfilesController {
 
   @Post()
   @HttpCode(201)
-  @UseGuards(JwtAuthGuard)
   async create(@Request() req, @Body() createProfileDto: CreateProfileDto) {
     await this.profilesService.create(req.user.id, createProfileDto);
   }
@@ -38,32 +35,44 @@ export class ProfilesController {
   @Get()
   @AllowAny()
   @UseInterceptors(ClassSerializerInterceptor)
-  async findAll(@Query() query) {
+  async findAll(@Query() query, @CurrentUser('roles') roles: string[]) {
+    if (roles.indexOf('admin') !== -1) {
+      console.log('admin');
+    }
     if (!query.name) throw new BadRequestException();
-    const profile = await this.profilesService.findByName(query.name);
+    const profile = await this.profilesService.findByFullName(query.name);
     return new ProfileDto(profile.toJSON());
   }
 
-  // @Get(':fullname')
-  // @UseInterceptors(ClassSerializerInterceptor)
-  // @AllowAny()
-  // findOne(@Param('fullname') fullname: string) {
-  //   return this.profilesService.findOne(fullname);
-  // }
+  @Get(':id')
+  @UseInterceptors(ClassSerializerInterceptor)
+  @AllowAny()
+  async findOne(@Param('id') id: string) {
+    const profile = await this.profilesService.findById(id);
+    return new ProfileDto(profile.toJSON());
+  }
 
-  @Patch()
-  @UseGuards(JwtAuthGuard)
-  update(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
-    return this.profilesService.update(req.user.id, updateProfileDto);
+  @Patch(':id')
+  @UseInterceptors(ClassSerializerInterceptor)
+  async update(
+    @CurrentUser('id') userid: string,
+    @Param('id') id: string,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
+    if (!(await this.profilesService.userIsAllowToWriteProfile(id, userid))) {
+      throw new UnauthorizedException();
+    }
+    const profile = await this.profilesService.update(id, updateProfileDto);
+    return new ProfileDto(profile.toJSON());
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  async remove(@Request() req, @Param('id') id: string) {
-    if (req.user.username === 'admin' || req.user.id == id) {
-      await this.profilesService.remove(id);
-      return;
+  @UseInterceptors(ClassSerializerInterceptor)
+  async remove(@CurrentUser('id') userid: string, @Param('id') id: string) {
+    if (!(await this.profilesService.userIsAllowToWriteProfile(id, userid))) {
+      throw new UnauthorizedException();
     }
-    throw new UnauthorizedException();
+    const profile = await this.profilesService.remove(id);
+    return new ProfileDto(profile.toJSON());
   }
 }

@@ -1,20 +1,38 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CurrentUser } from '../../decorator/current-user.decorator';
+import { Roles } from '../../decorator/roles.decorator';
+import { Role } from '../../enums/role.enum';
+import { UserDto } from './dto/user.dto';
+import { User } from './schemas/user.schema';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
-
   @Get()
+  @Roles(Role.Admin)
   findAll() {
     return this.usersService.findAll();
+  }
+
+  @Get('/me')
+  @UseInterceptors(ClassSerializerInterceptor)
+  async findMe(@CurrentUser('id') userId: string) {
+    const user = await this.usersService.findOne(userId);
+    return new UserDto(user.toJSON() as unknown as Partial<User>);
   }
 
   @Get(':id')

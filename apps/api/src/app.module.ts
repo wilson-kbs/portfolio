@@ -7,6 +7,7 @@ import { UsersModule } from './features/users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from './features/auth/jwt-auth.guard';
+import { RolesGuard } from './features/auth/roles.guard';
 
 @Module({
   imports: [
@@ -55,12 +56,16 @@ import { JwtAuthGuard } from './features/auth/jwt-auth.guard';
     AuthModule,
     UsersModule,
   ],
-  // providers: [
-  //   {
-  //     provide: APP_GUARD,
-  //     useFactory: (ref) => new JwtAuthGuard(ref),
-  //     inject: [Reflector],
-  //   },
-  // ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useFactory: (ref) => new JwtAuthGuard(ref),
+      inject: [Reflector],
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

@@ -9,15 +9,18 @@ export type UserDocument = User & Document;
 export class User {
   _id: string;
 
-  @Prop({ unique: true })
+  @Prop({ unique: true, required: true })
   username: string;
 
-  @Prop()
-  @Exclude()
-  passwordHash: string;
+  @Prop({ get: (roles: string[]) => roles.concat(['user']), default: [] })
+  roles: Array<string>;
 
   @Prop()
   email: string;
+
+  @Prop({ required: true })
+  @Exclude()
+  passwordHash: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

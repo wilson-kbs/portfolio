@@ -9,7 +9,8 @@ import { UpdateSkillDto } from './models/update-skill.dto';
 @Injectable()
 export class SkillsService {
   constructor(
-    @InjectModel(Profile.name) private profileModel: Model<ProfileDocument>,
+    @InjectModel(Profile.name)
+    private readonly profileModel: Model<ProfileDocument>,
   ) {}
 
   public async getSkillByProfileId(
